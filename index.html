@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WLC Free Kick Simulator</title>
+    <title>WCFKS - World Cup Free Kick Simulator</title>
     <link rel="icon" type="image/png" href="assets/branding/wlc-logo.png" />
     <link rel="stylesheet" href="styles.css?v=5" />
   </head>
@@ -30,12 +30,11 @@
 
       <section id="selectionScreen" class="selection-screen is-hidden">
         <div class="select-hero">
+          <button id="backToMenuFromSelection" type="button" class="back-button" title="Retour au menu">
+            <span>←</span>
+          </button>
           <div class="brand">
             <img class="brand-logo" src="assets/branding/wlc-logo.png" alt="WLC Free Kick Simulator" />
-            <div>
-              <span class="brand-kicker">World Legends Championship</span>
-              <strong>Free Kick Simulator</strong>
-            </div>
           </div>
           <div class="screen-title">
             <span>Mode solo</span>
@@ -73,12 +72,12 @@
                 <progress id="selectionPowerBar" max="100" value="96"></progress>
               </div>
               <div class="stat-row">
-                <div><span>Effet</span><strong id="selectionCurve">74</strong></div>
-                <progress id="selectionCurveBar" max="100" value="74"></progress>
+                <div><span>Effet</span><strong id="selectionCurve">86</strong></div>
+                <progress id="selectionCurveBar" max="100" value="86"></progress>
               </div>
               <div class="stat-row">
-                <div><span>Élévation</span><strong id="selectionLift">82</strong></div>
-                <progress id="selectionLiftBar" max="100" value="82"></progress>
+                <div><span>Sang froid</span><strong id="selectionComposure">94</strong></div>
+                <progress id="selectionComposureBar" max="100" value="94"></progress>
               </div>
             </div>
 
@@ -99,55 +98,38 @@
       <section id="gameScreen" class="game-screen is-hidden">
         <canvas id="game" width="1280" height="760" aria-label="Jeu de coup franc direct"></canvas>
 
-        <div class="overlay overlay-brand">
-          <span class="hud-monogram" aria-hidden="true">WLC</span>
-          <div>
-            <strong>Free Kick Simulator</strong>
-            <small id="gamePlayer">Cristiano Ronaldo · POR</small>
-          </div>
-        </div>
-
         <div class="overlay scoreline">
-          <span id="streak">Série 0</span>
-          <strong id="score">0</strong>
-          <span id="attempts">Tirs 0/10</span>
-        </div>
-
-        <div class="overlay command">
-          <div class="player-panel">
-            <span id="countryCode">POR</span>
-            <h2 id="playerName">Cristiano Ronaldo</h2>
-            <p id="playerTagline">Frappe météore, trajectoire sèche.</p>
+          <div class="score-item">
+            <span class="score-label">Score</span>
+            <strong id="score">0</strong>
           </div>
-
-          <div id="timingPanel" class="timing-panel" data-stage="idle">
-            <div class="timing-copy">
-              <span id="meterStage">Prêt</span>
-              <strong id="meterPrompt">Lance la séquence</strong>
-              <small>Appuie pour verrouiller</small>
-            </div>
-            <div class="timing-gauge" aria-hidden="true">
-              <span class="gauge-zone gauge-zone-high"></span>
-              <span class="gauge-zone gauge-zone-perfect"></span>
-              <span class="gauge-zone gauge-zone-low"></span>
-              <i id="meterNeedle"></i>
-            </div>
-            <div class="locked-values">
-              <span>Puissance <strong id="lockedPower">--</strong></span>
-              <span>Effet <strong id="lockedCurve">--</strong></span>
-            </div>
+          <div class="score-item">
+            <span class="score-label">Série</span>
+            <strong id="streak">0</strong>
           </div>
-
-          <div class="command-actions">
-            <button id="shoot" type="button">Démarrer</button>
-            <button id="reset" type="button" class="secondary">↺</button>
-            <button id="changePlayer" type="button" class="secondary">Changer</button>
+          <div class="score-item">
+            <span class="score-label">Tirs</span>
+            <strong id="attempts">0/10</strong>
           </div>
         </div>
 
-        <div class="overlay help">
-          <span>Viser : souris/tactile ou flèches</span>
-          <span>Jauges / Tir : espace × 3</span>
+        <div class="game-controls">
+          <button id="shoot" type="button">Démarrer</button>
+          <button id="reset" type="button" class="secondary">↺</button>
+          <button id="changePlayer" type="button" class="secondary">Changer</button>
+        </div>
+
+        <div id="timingGauge" class="timing-gauge-container" data-stage="hidden">
+          <div class="timing-gauge-track">
+            <div class="gauge-marker gauge-marker-start"></div>
+            <div class="gauge-marker gauge-marker-perfect"></div>
+            <div class="gauge-marker gauge-marker-end"></div>
+            <div id="gaugeNeedle" class="gauge-needle"></div>
+          </div>
+          <div class="gauge-label">
+            <span id="gaugeType">Puissance</span>
+            <strong id="gaugeValue">--</strong>
+          </div>
         </div>
 
         <div class="mobile-actions">
@@ -158,6 +140,23 @@
           <span>Impact parfait</span>
           <strong>BUT !</strong>
           <small id="goalPopupMove">Technique spéciale</small>
+        </div>
+      </section>
+
+      <section id="creditsScreen" class="credits-screen is-hidden">
+        <div class="credits-background"></div>
+        <div class="credits-content">
+          <div class="credits-logo">
+            <img src="assets/branding/wlc-logo.png" alt="WLC Logo" />
+          </div>
+          <div class="credits-text">
+            <p class="credits-label">Créé par</p>
+            <h1 class="credits-studio">Taciturn Web Art</h1>
+          </div>
+          <button id="backToMenu" type="button" class="credits-back">
+            <span class="credits-back-icon">←</span>
+            <span>Retour au menu</span>
+          </button>
         </div>
       </section>
     </main>

@@ -11,8 +11,11 @@ const els = {
   menuScreen: document.querySelector("#menuScreen"),
   selectionScreen: document.querySelector("#selectionScreen"),
   gameScreen: document.querySelector("#gameScreen"),
+  creditsScreen: document.querySelector("#creditsScreen"),
   playButton: document.querySelector("#playButton"),
   creditsButton: document.querySelector("#creditsButton"),
+  backToMenu: document.querySelector("#backToMenu"),
+  backToMenuFromSelection: document.querySelector("#backToMenuFromSelection"),
   cards: document.querySelector("#playerCards"),
   selectionName: document.querySelector("#selectionName"),
   selectionCountry: document.querySelector("#selectionCountry"),
@@ -21,23 +24,17 @@ const els = {
   selectionMove: document.querySelector("#selectionMove"),
   selectionPower: document.querySelector("#selectionPower"),
   selectionCurve: document.querySelector("#selectionCurve"),
-  selectionLift: document.querySelector("#selectionLift"),
+  selectionComposure: document.querySelector("#selectionComposure"),
   selectionPowerBar: document.querySelector("#selectionPowerBar"),
   selectionCurveBar: document.querySelector("#selectionCurveBar"),
-  selectionLiftBar: document.querySelector("#selectionLiftBar"),
-  playerName: document.querySelector("#playerName"),
-  countryCode: document.querySelector("#countryCode"),
-  playerTagline: document.querySelector("#playerTagline"),
-  gamePlayer: document.querySelector("#gamePlayer"),
+  selectionComposureBar: document.querySelector("#selectionComposureBar"),
   score: document.querySelector("#score"),
   streak: document.querySelector("#streak"),
   attempts: document.querySelector("#attempts"),
-  timingPanel: document.querySelector("#timingPanel"),
-  meterStage: document.querySelector("#meterStage"),
-  meterPrompt: document.querySelector("#meterPrompt"),
-  meterNeedle: document.querySelector("#meterNeedle"),
-  lockedPower: document.querySelector("#lockedPower"),
-  lockedCurve: document.querySelector("#lockedCurve"),
+  timingGauge: document.querySelector("#timingGauge"),
+  gaugeNeedle: document.querySelector("#gaugeNeedle"),
+  gaugeType: document.querySelector("#gaugeType"),
+  gaugeValue: document.querySelector("#gaugeValue"),
   shoot: document.querySelector("#shoot"),
   reset: document.querySelector("#reset"),
   random: document.querySelector("#randomPlayer"),
@@ -99,15 +96,15 @@ const PLAYERS = [
     country: "Portugal",
     flag: "assets/flag/Portugal.png",
     short: "Cristiano Ronaldo",
-    tagline: "Frappe météore, trajectoire sèche.",
+    tagline: "Puissance brute, trajectoire imprévisible.",
     main: "#b9152c",
     second: "#0a7f4f",
     trim: "#f5d36b",
     hair: "#191919",
     skin: "#d8a474",
     pattern: "slash",
-    stats: { power: 96, curve: 74, lift: 82, keeperFear: 0.18 },
-    signature: "Meteor Knuckle",
+    stats: { power: 96, curve: 86, composure: 94, keeperFear: 0.18 },
+    signature: "Fúria de Madeira",
   },
   {
     id: "messi",
@@ -116,15 +113,15 @@ const PLAYERS = [
     country: "Argentine",
     flag: "assets/flag/argentina.png",
     short: "Lionel Messi",
-    tagline: "Courbe lunaire, lucarne opposée.",
+    tagline: "Précision chirurgicale, courbe parfaite.",
     main: "#9eddff",
     second: "#f8fbff",
     trim: "#1f2a48",
     hair: "#4b2b1f",
     skin: "#d8aa7c",
     pattern: "stripes",
-    stats: { power: 82, curve: 98, lift: 88, keeperFear: 0.12 },
-    signature: "Luna Arc",
+    stats: { power: 86, curve: 96, composure: 91, keeperFear: 0.12 },
+    signature: "Courbe Silencieuse",
   },
   {
     id: "mbappe",
@@ -133,15 +130,15 @@ const PLAYERS = [
     country: "France",
     flag: "assets/flag/france.png",
     short: "Kylian Mbappé",
-    tagline: "Impact supersonique, départ explosif.",
+    tagline: "Vitesse d'exécution, effet de surprise.",
     main: "#243d86",
     second: "#f5f7ff",
     trim: "#df3345",
     hair: "#111111",
     skin: "#8c5a3f",
     pattern: "pin",
-    stats: { power: 91, curve: 83, lift: 79, keeperFear: 0.16 },
-    signature: "Blue Burst",
+    stats: { power: 90, curve: 86, composure: 90, keeperFear: 0.16 },
+    signature: "Pas content ?",
   },
   {
     id: "vinicius",
@@ -150,15 +147,15 @@ const PLAYERS = [
     country: "Brésil",
     flag: "assets/flag/Brasil.png",
     short: "Vinicius JR.",
-    tagline: "Feinte de hanche, ballon qui danse.",
+    tagline: "Feinte de hanche, coup du foulard.",
     main: "#f3d638",
     second: "#1f8d48",
     trim: "#173b8f",
     hair: "#101010",
     skin: "#7b4a31",
     pattern: "chevron",
-    stats: { power: 86, curve: 90, lift: 76, keeperFear: 0.14 },
-    signature: "Samba Mirage",
+    stats: { power: 86, curve: 87, composure: 88, keeperFear: 0.14 },
+    signature: "Tir Samba",
   },
   {
     id: "yamal",
@@ -167,15 +164,15 @@ const PLAYERS = [
     country: "Espagne",
     flag: "assets/flag/Spain.png",
     short: "Lamine Yamal",
-    tagline: "Geste créatif, angle impossible.",
+    tagline: "Insouciance juvénile, audace créative.",
     main: "#c81e32",
     second: "#f2cf45",
     trim: "#263f85",
     hair: "#161616",
     skin: "#9a6444",
     pattern: "waves",
-    stats: { power: 80, curve: 93, lift: 91, keeperFear: 0.11 },
-    signature: "Aurora Left",
+    stats: { power: 84, curve: 92, composure: 91, keeperFear: 0.11 },
+    signature: "Llama de La Masia",
   },
   {
     id: "salah",
@@ -184,15 +181,15 @@ const PLAYERS = [
     country: "Égypte",
     flag: "assets/flag/Egypt.png",
     short: "Mohamed Salah",
-    tagline: "Effet intérieur, frappe enveloppée.",
+    tagline: "Effet enveloppant, piqué de faucon.",
     main: "#c51f2d",
     second: "#ffffff",
     trim: "#111111",
     hair: "#1b1410",
     skin: "#9c6848",
     pattern: "bands",
-    stats: { power: 85, curve: 95, lift: 84, keeperFear: 0.13 },
-    signature: "Nile Comet",
+    stats: { power: 84, curve: 94, composure: 85, keeperFear: 0.13 },
+    signature: "Frappe Pharaonique",
   },
 ];
 
@@ -262,6 +259,8 @@ const state = {
   keeper: { x: goal.x, y: goal.y + goal.h - 14, diveX: 0, reaction: 0 },
   meter: { value: 0, direction: 1, power: null, curve: null },
   inputLockUntil: 0,
+  specialMoveAvailable: false,
+  specialMoveUsed: false,
   aimTime: 0,
   wallJump: 0,
   shake: 0,
@@ -323,14 +322,10 @@ function selectPlayer(index) {
   els.selectionMove.textContent = p.signature;
   els.selectionPower.textContent = p.stats.power;
   els.selectionCurve.textContent = p.stats.curve;
-  els.selectionLift.textContent = p.stats.lift;
+  els.selectionComposure.textContent = p.stats.composure;
   els.selectionPowerBar.value = p.stats.power;
   els.selectionCurveBar.value = p.stats.curve;
-  els.selectionLiftBar.value = p.stats.lift;
-  els.playerName.textContent = p.name;
-  els.countryCode.textContent = p.code;
-  els.playerTagline.textContent = p.tagline;
-  els.gamePlayer.textContent = `${p.name} · ${p.code}`;
+  els.selectionComposureBar.value = p.stats.composure;
   [...els.cards.children].forEach((card, i) => card.classList.toggle("active", i === index));
   state.message = `${p.signature} prêt`;
 }
@@ -340,6 +335,7 @@ function showMenu() {
   els.menuScreen.classList.remove("is-hidden");
   els.selectionScreen.classList.add("is-hidden");
   els.gameScreen.classList.add("is-hidden");
+  els.creditsScreen.classList.add("is-hidden");
 }
 
 function showSelection() {
@@ -347,6 +343,7 @@ function showSelection() {
   els.menuScreen.classList.add("is-hidden");
   els.selectionScreen.classList.remove("is-hidden");
   els.gameScreen.classList.add("is-hidden");
+  els.creditsScreen.classList.add("is-hidden");
 }
 
 function showGame() {
@@ -354,11 +351,16 @@ function showGame() {
   els.menuScreen.classList.add("is-hidden");
   els.selectionScreen.classList.add("is-hidden");
   els.gameScreen.classList.remove("is-hidden");
+  els.creditsScreen.classList.add("is-hidden");
   resetSeries();
 }
 
 function showCredits() {
-  alert("Page Crédits - À venir !");
+  state.screen = "credits";
+  els.menuScreen.classList.add("is-hidden");
+  els.selectionScreen.classList.add("is-hidden");
+  els.gameScreen.classList.add("is-hidden");
+  els.creditsScreen.classList.remove("is-hidden");
 }
 
 function resetSeries() {
@@ -367,6 +369,8 @@ function resetSeries() {
   state.attempts = 0;
   state.phase = "aim";
   state.ball = null;
+  state.specialMoveAvailable = false;
+  state.specialMoveUsed = false;
   resetShotSequence();
   state.message = "Nouvelle série : 10 coups francs";
   state.particles = [];
@@ -379,20 +383,18 @@ function resetShotSequence() {
   state.meter.direction = 1;
   state.meter.power = null;
   state.meter.curve = null;
-  els.timingPanel.dataset.stage = "idle";
-  els.timingPanel.style.setProperty("--meter-position", "0");
-  els.meterStage.textContent = "Prêt";
-  els.meterPrompt.textContent = "Lance la séquence";
-  els.lockedPower.textContent = "--";
-  els.lockedCurve.textContent = "--";
+  els.timingGauge.dataset.stage = "hidden";
+  els.timingGauge.style.setProperty("--meter-position", "0");
+  els.gaugeType.textContent = "Puissance";
+  els.gaugeValue.textContent = "--";
   els.shoot.textContent = "Démarrer";
   els.mobileShoot.textContent = "Action";
 }
 
 function updateHud() {
   els.score.textContent = state.score;
-  els.streak.textContent = `Série ${state.streak}`;
-  els.attempts.textContent = `Tirs ${state.attempts}/${state.maxAttempts}`;
+  els.streak.textContent = state.streak;
+  els.attempts.textContent = `${state.attempts}/${state.maxAttempts}`;
 }
 
 function showGoalPopup(signature) {
@@ -412,9 +414,9 @@ function handleShotInput() {
     state.phase = "power";
     state.meter.value = 0;
     state.meter.direction = 1;
-    els.timingPanel.dataset.stage = "power";
-    els.meterStage.textContent = "Puissance";
-    els.meterPrompt.textContent = "Verrouille l'impact";
+    els.timingGauge.dataset.stage = "power";
+    els.gaugeType.textContent = "Puissance";
+    els.gaugeValue.textContent = "--";
     els.shoot.textContent = "Bloquer";
     state.message = "Jauge de puissance";
     return;
@@ -422,13 +424,13 @@ function handleShotInput() {
 
   if (state.phase === "power") {
     state.meter.power = Math.round(45 + state.meter.value * 55);
-    els.lockedPower.textContent = state.meter.power;
+    els.gaugeValue.textContent = state.meter.power;
     state.phase = "curve";
     state.meter.value = 0.5;
     state.meter.direction = 1;
-    els.timingPanel.dataset.stage = "curve";
-    els.meterStage.textContent = "Effet";
-    els.meterPrompt.textContent = "Choisis la courbe";
+    els.timingGauge.dataset.stage = "curve";
+    els.gaugeType.textContent = "Effet";
+    els.gaugeValue.textContent = "--";
     els.shoot.textContent = "Frapper";
     state.message = "Jauge d'effet";
     return;
@@ -437,7 +439,7 @@ function handleShotInput() {
   if (state.phase === "curve") {
     const footDirection = isLeftFooted() ? -1 : 1;
     state.meter.curve = Math.round((state.meter.value * 2 - 1) * 100 * footDirection);
-    els.lockedCurve.textContent = formatCurve(state.meter.curve);
+    els.gaugeValue.textContent = formatCurve(state.meter.curve);
     launchShot();
   }
 }
@@ -451,8 +453,8 @@ function launchShot() {
   const p = player();
   const power = (state.meter.power ?? 72) / 100;
   const curve = (state.meter.curve ?? 0) / 100;
-  const lift = clamp(0.48 + (p.stats.lift - 75) / 120 + (1 - power) * 0.1, 0.46, 0.78);
-  const talent = (p.stats.power * power + p.stats.curve * Math.abs(curve) + p.stats.lift * lift) / 300;
+  const lift = clamp(0.48 + (p.stats.composure - 75) / 120 + (1 - power) * 0.1, 0.46, 0.78);
+  const talent = (p.stats.power * power + p.stats.curve * Math.abs(curve) + p.stats.composure * lift) / 300;
   const aimNoise = (1 - talent) * 52;
   const liveTarget = movingTargetPosition();
   const aimX = liveTarget.x + (Math.random() - 0.5) * aimNoise;
@@ -480,9 +482,7 @@ function launchShot() {
 
   state.attempts += 1;
   state.phase = "flight";
-  els.timingPanel.dataset.stage = "locked";
-  els.meterStage.textContent = "Impact";
-  els.meterPrompt.textContent = "Technique déclenchée";
+  els.timingGauge.dataset.stage = "hidden";
   els.shoot.textContent = "En jeu";
   state.wallJump = 1;
   state.shake = 10 + power * 10;
@@ -535,6 +535,13 @@ function finishShot() {
   if (scored) {
     state.score += 100 + state.streak * 35 + Math.round((p.stats.curve + p.stats.power) / 2);
     state.streak += 1;
+
+    // Activer la technique spéciale après 5 buts consécutifs
+    if (state.streak >= 5 && !state.specialMoveAvailable && !state.specialMoveUsed) {
+      state.specialMoveAvailable = true;
+      // TODO: Afficher notification que la technique spéciale est disponible
+    }
+
     state.message = b.postHit ? `Poteau rentrant ! ${p.signature}` : `But ! ${p.signature}`;
     state.flash = 1;
     burst(finalX, finalY, p.trim, 54);
@@ -592,7 +599,7 @@ function update(dt) {
       state.meter.value = 0;
       state.meter.direction = 1;
     }
-    els.timingPanel.style.setProperty("--meter-position", String(state.meter.value * 100));
+    els.timingGauge.style.setProperty("--meter-position", String(state.meter.value * 100));
   }
 
   if (state.phase === "flight" && state.ball) {
@@ -1192,16 +1199,49 @@ function drawTarget() {
     && liveTarget.y < goal.y + goal.h;
   ctx.save();
   ctx.strokeStyle = insideGoal ? "#ffd766" : "#ff526d";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2;
+
+  // Cercle extérieur avec animation
+  const radius = 20 + Math.sin(performance.now() / 160) * 3;
   ctx.beginPath();
-  ctx.arc(liveTarget.x, liveTarget.y, 22 + Math.sin(performance.now() / 160) * 4, 0, Math.PI * 2);
+  ctx.arc(liveTarget.x, liveTarget.y, radius, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Petit point central
+  ctx.fillStyle = insideGoal ? "#ffd766" : "#ff526d";
   ctx.beginPath();
-  ctx.moveTo(liveTarget.x - 36, liveTarget.y);
-  ctx.lineTo(liveTarget.x + 36, liveTarget.y);
-  ctx.moveTo(liveTarget.x, liveTarget.y - 36);
-  ctx.lineTo(liveTarget.x, liveTarget.y + 36);
+  ctx.arc(liveTarget.x, liveTarget.y, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Paramètres des lignes de visée externes
+  const outerStart = radius + 4;
+  const outerEnd = radius + 12;
+
+  // Lignes externes uniquement
+  // Ligne horizontale gauche
+  ctx.beginPath();
+  ctx.moveTo(liveTarget.x - outerEnd, liveTarget.y);
+  ctx.lineTo(liveTarget.x - outerStart, liveTarget.y);
   ctx.stroke();
+
+  // Ligne horizontale droite
+  ctx.beginPath();
+  ctx.moveTo(liveTarget.x + outerStart, liveTarget.y);
+  ctx.lineTo(liveTarget.x + outerEnd, liveTarget.y);
+  ctx.stroke();
+
+  // Ligne verticale haut
+  ctx.beginPath();
+  ctx.moveTo(liveTarget.x, liveTarget.y - outerEnd);
+  ctx.lineTo(liveTarget.x, liveTarget.y - outerStart);
+  ctx.stroke();
+
+  // Ligne verticale bas
+  ctx.beginPath();
+  ctx.moveTo(liveTarget.x, liveTarget.y + outerStart);
+  ctx.lineTo(liveTarget.x, liveTarget.y + outerEnd);
+  ctx.stroke();
+
   ctx.restore();
 }
 
@@ -1284,15 +1324,16 @@ function drawMangaOverlay() {
     ctx.stroke();
   }
 
-  ctx.fillStyle = "rgba(7,10,18,0.72)";
-  ctx.fillRect(0, H - 78, W, 78);
-  ctx.fillStyle = "#ffcf33";
-  ctx.font = "900 24px Inter, sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText(state.message, 34, H - 42);
-  ctx.fillStyle = "#29d7ff";
-  ctx.font = "800 15px Inter, sans-serif";
-  ctx.fillText(`${p.name} · ${p.code} · ${p.signature}`, 34, H - 18);
+  // Textes supprimés - interface minimaliste
+  // ctx.fillStyle = "rgba(7,10,18,0.72)";
+  // ctx.fillRect(0, H - 78, W, 78);
+  // ctx.fillStyle = "#ffcf33";
+  // ctx.font = "900 24px Inter, sans-serif";
+  // ctx.textAlign = "left";
+  // ctx.fillText(state.message, 34, H - 42);
+  // ctx.fillStyle = "#29d7ff";
+  // ctx.font = "800 15px Inter, sans-serif";
+  // ctx.fillText(`${p.name} · ${p.code} · ${p.signature}`, 34, H - 18);
   ctx.restore();
 }
 
@@ -1337,6 +1378,8 @@ document.addEventListener("keyup", (event) => keys.delete(event.key));
 
 els.playButton.addEventListener("click", showSelection);
 els.creditsButton.addEventListener("click", showCredits);
+els.backToMenu.addEventListener("click", showMenu);
+els.backToMenuFromSelection.addEventListener("click", showMenu);
 els.shoot.addEventListener("click", handleShotInput);
 els.mobileShoot.addEventListener("click", handleShotInput);
 els.reset.addEventListener("click", resetSeries);
