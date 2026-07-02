@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WLC Free Kick Simulator</title>
+    <link rel="icon" type="image/png" href="assets/branding/wlc-logo.png" />
+    <link rel="stylesheet" href="styles.css?v=5" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="menuScreen" class="menu-screen">
+        <div class="menu-background"></div>
+        <div class="menu-content">
+          <div class="menu-logo">
+            <img src="assets/branding/wlc-logo.png" alt="WLC Logo" />
+          </div>
+          <nav class="menu-nav">
+            <button id="playButton" type="button" class="menu-button menu-button-primary">
+              <span class="menu-button-glow"></span>
+              <span class="menu-button-text">JOUER LA COUPE</span>
+            </button>
+            <button id="creditsButton" type="button" class="menu-button menu-button-secondary">
+              <span class="menu-button-glow"></span>
+              <span class="menu-button-text">CRÉDITS</span>
+            </button>
+          </nav>
+        </div>
+      </section>
+
+      <section id="selectionScreen" class="selection-screen is-hidden">
+        <div class="select-hero">
+          <div class="brand">
+            <img class="brand-logo" src="assets/branding/wlc-logo.png" alt="WLC Free Kick Simulator" />
+            <div>
+              <span class="brand-kicker">World Legends Championship</span>
+              <strong>Free Kick Simulator</strong>
+            </div>
+          </div>
+          <div class="screen-title">
+            <span>Mode solo</span>
+            <strong>Sélection du tireur</strong>
+          </div>
+        </div>
+
+        <section class="roster" aria-label="Sélection du tireur">
+          <div class="roster-head">
+            <span>01</span>
+            <h2>Choisis une légende</h2>
+          </div>
+          <div id="playerCards" class="player-cards"></div>
+          <button id="randomPlayer" type="button" title="Choisir au hasard" aria-label="Choisir un joueur au hasard">↻</button>
+        </section>
+
+        <div class="selection-layout">
+          <section class="selection-preview" aria-label="Aperçu du joueur sélectionné">
+            <canvas id="previewCanvas" width="720" height="720" aria-label="Aperçu du joueur sélectionné"></canvas>
+            <div class="stage-ring" aria-hidden="true"></div>
+          </section>
+
+          <section class="player-info" aria-label="Informations du joueur">
+            <div class="player-identity">
+              <h1 id="selectionName">Cristiano Ronaldo</h1>
+              <div class="player-country">
+                <img id="selectionFlag" src="assets/flag/Portugal.png" alt="Portugal" />
+                <span id="selectionCountry">POR</span>
+              </div>
+            </div>
+
+            <div class="player-stats">
+              <div class="stat-row">
+                <div><span>Puissance</span><strong id="selectionPower">96</strong></div>
+                <progress id="selectionPowerBar" max="100" value="96"></progress>
+              </div>
+              <div class="stat-row">
+                <div><span>Effet</span><strong id="selectionCurve">74</strong></div>
+                <progress id="selectionCurveBar" max="100" value="74"></progress>
+              </div>
+              <div class="stat-row">
+                <div><span>Élévation</span><strong id="selectionLift">82</strong></div>
+                <progress id="selectionLiftBar" max="100" value="82"></progress>
+              </div>
+            </div>
+
+            <div class="special-move">
+              <span>Technique spéciale</span>
+              <strong id="selectionMove">Meteor Knuckle</strong>
+              <p id="selectionTagline">Frappe météore, trajectoire sèche.</p>
+            </div>
+          </section>
+        </div>
+
+        <footer class="selection-actions">
+          <p><strong>WLC</strong> Chaque tireur possède sa propre trajectoire.</p>
+          <button id="enterGame" type="button">Entrer sur le terrain <span>→</span></button>
+        </footer>
+      </section>
+
+      <section id="gameScreen" class="game-screen is-hidden">
+        <canvas id="game" width="1280" height="760" aria-label="Jeu de coup franc direct"></canvas>
+
+        <div class="overlay overlay-brand">
+          <span class="hud-monogram" aria-hidden="true">WLC</span>
+          <div>
+            <strong>Free Kick Simulator</strong>
+            <small id="gamePlayer">Cristiano Ronaldo · POR</small>
+          </div>
+        </div>
+
+        <div class="overlay scoreline">
+          <span id="streak">Série 0</span>
+          <strong id="score">0</strong>
+          <span id="attempts">Tirs 0/10</span>
+        </div>
+
+        <div class="overlay command">
+          <div class="player-panel">
+            <span id="countryCode">POR</span>
+            <h2 id="playerName">Cristiano Ronaldo</h2>
+            <p id="playerTagline">Frappe météore, trajectoire sèche.</p>
+          </div>
+
+          <div id="timingPanel" class="timing-panel" data-stage="idle">
+            <div class="timing-copy">
+              <span id="meterStage">Prêt</span>
+              <strong id="meterPrompt">Lance la séquence</strong>
+              <small>Appuie pour verrouiller</small>
+            </div>
+            <div class="timing-gauge" aria-hidden="true">
+              <span class="gauge-zone gauge-zone-high"></span>
+              <span class="gauge-zone gauge-zone-perfect"></span>
+              <span class="gauge-zone gauge-zone-low"></span>
+              <i id="meterNeedle"></i>
+            </div>
+            <div class="locked-values">
+              <span>Puissance <strong id="lockedPower">--</strong></span>
+              <span>Effet <strong id="lockedCurve">--</strong></span>
+            </div>
+          </div>
+
+          <div class="command-actions">
+            <button id="shoot" type="button">Démarrer</button>
+            <button id="reset" type="button" class="secondary">↺</button>
+            <button id="changePlayer" type="button" class="secondary">Changer</button>
+          </div>
+        </div>
+
+        <div class="overlay help">
+          <span>Viser : souris/tactile ou flèches</span>
+          <span>Jauges / Tir : espace × 3</span>
+        </div>
+
+        <div class="mobile-actions">
+          <button id="mobileShoot" type="button">Action</button>
+        </div>
+
+        <div id="goalPopup" class="goal-popup" aria-live="polite">
+          <span>Impact parfait</span>
+          <strong>BUT !</strong>
+          <small id="goalPopupMove">Technique spéciale</small>
+        </div>
+      </section>
+    </main>
+    <script src="game.js?v=18"></script>
+  </body>
+</html>
