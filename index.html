@@ -48,7 +48,11 @@
             <h2>Choisis une légende</h2>
           </div>
           <div id="playerCards" class="player-cards"></div>
-          <button id="randomPlayer" type="button" title="Choisir au hasard" aria-label="Choisir un joueur au hasard">↻</button>
+          <button id="randomPlayer" type="button" title="Choisir au hasard" aria-label="Choisir un joueur au hasard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+            </svg>
+          </button>
         </section>
 
         <div class="selection-layout">
@@ -90,7 +94,18 @@
         </div>
 
         <footer class="selection-actions">
-          <p><strong>WLC</strong> Chaque tireur possède sa propre trajectoire.</p>
+          <div class="selection-footer-content">
+            <p><strong>WLC</strong> Chaque tireur possède sa propre trajectoire.</p>
+            <div class="player-name-input">
+              <input
+                type="text"
+                id="playerNameInput"
+                placeholder="Entre ton prénom..."
+                maxlength="20"
+                autocomplete="off"
+              />
+            </div>
+          </div>
           <button id="enterGame" type="button">Entrer sur le terrain <span>→</span></button>
         </footer>
       </section>
@@ -104,12 +119,31 @@
             <strong id="score">0</strong>
           </div>
           <div class="score-item">
-            <span class="score-label">Série</span>
+            <span class="score-label">Buts</span>
             <strong id="streak">0</strong>
           </div>
           <div class="score-item">
+            <span class="score-label">Temps</span>
+            <strong id="timer">3:00</strong>
+          </div>
+          <div class="score-item">
             <span class="score-label">Tirs</span>
-            <strong id="attempts">0/10</strong>
+            <strong id="attempts">0</strong>
+          </div>
+        </div>
+
+        <div id="comboDisplay" class="combo-display" data-combo="0">
+          <span class="combo-label">COMBO</span>
+          <strong id="comboValue" class="combo-value">x1</strong>
+        </div>
+
+        <div id="specialGaugeContainer" class="special-gauge-container">
+          <div class="special-gauge-label">
+            <span>Technique Spéciale</span>
+            <small id="specialUsageText">0/2</small>
+          </div>
+          <div class="special-gauge-track">
+            <div id="specialGaugeFill" class="special-gauge-fill" style="width: 0%"></div>
           </div>
         </div>
 
@@ -140,6 +174,151 @@
           <span>Impact parfait</span>
           <strong>BUT !</strong>
           <small id="goalPopupMove">Technique spéciale</small>
+        </div>
+
+        <div id="soClosePopup" class="so-close-popup" aria-live="polite">
+          <strong>SO CLOSE!</strong>
+          <span>Près du poteau</span>
+        </div>
+      </section>
+
+      <section id="endScreen" class="end-screen is-hidden">
+        <div class="end-background"></div>
+        <div class="end-content">
+          <div class="end-title">
+            <h1>Fin de la série</h1>
+            <p><span id="endPlayerName">Joueur</span> - Résumé de ta performance</p>
+          </div>
+
+          <div class="end-stats-grid">
+            <div class="end-stat-card">
+              <span class="end-stat-label">Score Final</span>
+              <strong id="endScore" class="end-stat-value">0</strong>
+            </div>
+
+            <div class="end-stat-card">
+              <span class="end-stat-label">Buts Marqués</span>
+              <strong id="endGoals" class="end-stat-value">0</strong>
+            </div>
+
+            <div class="end-stat-card">
+              <span class="end-stat-label">Précision</span>
+              <strong id="endAccuracy" class="end-stat-value">0%</strong>
+            </div>
+
+            <div class="end-stat-card">
+              <span class="end-stat-label">Meilleur Combo</span>
+              <strong id="endMaxCombo" class="end-stat-value">x1</strong>
+            </div>
+
+            <div class="end-stat-card">
+              <span class="end-stat-label">Tirs "So Close"</span>
+              <strong id="endSoClose" class="end-stat-value">0</strong>
+            </div>
+
+            <div class="end-stat-card">
+              <span class="end-stat-label">Techniques Spéciales</span>
+              <strong id="endSpecialUsed" class="end-stat-value">0</strong>
+            </div>
+          </div>
+
+          <div class="end-leaderboard">
+            <div class="leaderboard-header">
+              <h2>Records Mondiaux</h2>
+              <span class="leaderboard-subtitle">Top 10 des meilleurs scores</span>
+            </div>
+            <div class="leaderboard-list">
+              <div class="leaderboard-item leaderboard-rank-1">
+                <span class="rank">1</span>
+                <div class="player-info-lb">
+                  <strong>Lucas M.</strong>
+                  <span class="player-country-lb">🇧🇷 São Paulo</span>
+                </div>
+                <strong class="score-value">2,840</strong>
+              </div>
+              <div class="leaderboard-item leaderboard-rank-2">
+                <span class="rank">2</span>
+                <div class="player-info-lb">
+                  <strong>Sofia R.</strong>
+                  <span class="player-country-lb">🇪🇸 Madrid</span>
+                </div>
+                <strong class="score-value">2,715</strong>
+              </div>
+              <div class="leaderboard-item leaderboard-rank-3">
+                <span class="rank">3</span>
+                <div class="player-info-lb">
+                  <strong>Karim B.</strong>
+                  <span class="player-country-lb">🇫🇷 Paris</span>
+                </div>
+                <strong class="score-value">2,590</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">4</span>
+                <div class="player-info-lb">
+                  <strong>Yuki T.</strong>
+                  <span class="player-country-lb">🇯🇵 Tokyo</span>
+                </div>
+                <strong class="score-value">2,445</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">5</span>
+                <div class="player-info-lb">
+                  <strong>Emma L.</strong>
+                  <span class="player-country-lb">🇬🇧 London</span>
+                </div>
+                <strong class="score-value">2,320</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">6</span>
+                <div class="player-info-lb">
+                  <strong>Ahmed K.</strong>
+                  <span class="player-country-lb">🇪🇬 Le Caire</span>
+                </div>
+                <strong class="score-value">2,180</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">7</span>
+                <div class="player-info-lb">
+                  <strong>Marie D.</strong>
+                  <span class="player-country-lb">🇫🇷 Lyon</span>
+                </div>
+                <strong class="score-value">2,095</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">8</span>
+                <div class="player-info-lb">
+                  <strong>Diego S.</strong>
+                  <span class="player-country-lb">🇦🇷 Buenos Aires</span>
+                </div>
+                <strong class="score-value">1,975</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">9</span>
+                <div class="player-info-lb">
+                  <strong>Anna W.</strong>
+                  <span class="player-country-lb">🇩🇪 Berlin</span>
+                </div>
+                <strong class="score-value">1,860</strong>
+              </div>
+              <div class="leaderboard-item">
+                <span class="rank">10</span>
+                <div class="player-info-lb">
+                  <strong>João P.</strong>
+                  <span class="player-country-lb">🇵🇹 Lisbonne</span>
+                </div>
+                <strong class="score-value">1,750</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="end-actions">
+            <button id="restartGame" type="button" class="end-button-primary">
+              <span>Rejouer</span>
+            </button>
+            <button id="backToMenuFromEnd" type="button" class="end-button-secondary">
+              <span>Menu Principal</span>
+            </button>
+          </div>
         </div>
       </section>
 

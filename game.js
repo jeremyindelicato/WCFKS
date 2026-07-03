@@ -12,10 +12,13 @@ const els = {
   selectionScreen: document.querySelector("#selectionScreen"),
   gameScreen: document.querySelector("#gameScreen"),
   creditsScreen: document.querySelector("#creditsScreen"),
+  endScreen: document.querySelector("#endScreen"),
   playButton: document.querySelector("#playButton"),
   creditsButton: document.querySelector("#creditsButton"),
   backToMenu: document.querySelector("#backToMenu"),
   backToMenuFromSelection: document.querySelector("#backToMenuFromSelection"),
+  backToMenuFromEnd: document.querySelector("#backToMenuFromEnd"),
+  restartGame: document.querySelector("#restartGame"),
   cards: document.querySelector("#playerCards"),
   selectionName: document.querySelector("#selectionName"),
   selectionCountry: document.querySelector("#selectionCountry"),
@@ -28,9 +31,15 @@ const els = {
   selectionPowerBar: document.querySelector("#selectionPowerBar"),
   selectionCurveBar: document.querySelector("#selectionCurveBar"),
   selectionComposureBar: document.querySelector("#selectionComposureBar"),
+  playerNameInput: document.querySelector("#playerNameInput"),
   score: document.querySelector("#score"),
   streak: document.querySelector("#streak"),
   attempts: document.querySelector("#attempts"),
+  timer: document.querySelector("#timer"),
+  comboDisplay: document.querySelector("#comboDisplay"),
+  comboValue: document.querySelector("#comboValue"),
+  specialGaugeFill: document.querySelector("#specialGaugeFill"),
+  specialUsageText: document.querySelector("#specialUsageText"),
   timingGauge: document.querySelector("#timingGauge"),
   gaugeNeedle: document.querySelector("#gaugeNeedle"),
   gaugeType: document.querySelector("#gaugeType"),
@@ -43,6 +52,14 @@ const els = {
   changePlayer: document.querySelector("#changePlayer"),
   goalPopup: document.querySelector("#goalPopup"),
   goalPopupMove: document.querySelector("#goalPopupMove"),
+  soClosePopup: document.querySelector("#soClosePopup"),
+  endPlayerName: document.querySelector("#endPlayerName"),
+  endScore: document.querySelector("#endScore"),
+  endGoals: document.querySelector("#endGoals"),
+  endAccuracy: document.querySelector("#endAccuracy"),
+  endMaxCombo: document.querySelector("#endMaxCombo"),
+  endSoClose: document.querySelector("#endSoClose"),
+  endSpecialUsed: document.querySelector("#endSpecialUsed"),
 };
 
 const scene = {
@@ -250,10 +267,10 @@ wallImages.jump.src = "assets/wall/wall-jump.png?v=2";
 const state = {
   selected: 0,
   screen: "menu",
+  playerName: "",
   score: 0,
   streak: 0,
   attempts: 0,
-  maxAttempts: 10,
   phase: "aim",
   ball: null,
   keeper: { x: goal.x, y: goal.y + goal.h - 14, diveX: 0, reaction: 0 },
@@ -261,6 +278,19 @@ const state = {
   inputLockUntil: 0,
   specialMoveAvailable: false,
   specialMoveUsed: false,
+  specialGauge: 0,
+  specialUsageCount: 0,
+  maxSpecialUsage: 2,
+  combo: 0,
+  maxCombo: 0,
+  consecutiveGoals: 0,
+  totalGoals: 0,
+  totalShots: 0,
+  perfectShots: 0,
+  soCloseCount: 0,
+  gameTime: 180,
+  gameStartTime: null,
+  gameTimeRemaining: 180,
   aimTime: 0,
   wallJump: 0,
   shake: 0,
@@ -268,6 +298,7 @@ const state = {
   message: "Vise la lucarne et déclenche le tir",
   particles: [],
   last: performance.now(),
+  comboFlash: 0,
 };
 
 function clamp(v, min, max) {
@@ -347,12 +378,28 @@ function showSelection() {
 }
 
 function showGame() {
+  const playerName = els.playerNameInput.value.trim();
+  state.playerName = playerName || "Joueur";
+
+  try {
+    localStorage.setItem("wcfks_playerName", state.playerName);
+  } catch (e) {
+    console.warn("LocalStorage not available:", e);
+  }
+
   state.screen = "game";
   els.menuScreen.classList.add("is-hidden");
   els.selectionScreen.classList.add("is-hidden");
   els.gameScreen.classList.remove("is-hidden");
   els.creditsScreen.classList.add("is-hidden");
+  els.endScreen.classList.add("is-hidden");
   resetSeries();
+  startGameTimer();
+}
+
+function startGameTimer() {
+  state.gameStartTime = performance.now();
+  state.gameTimeRemaining = state.gameTime;
 }
 
 function showCredits() {
@@ -361,6 +408,26 @@ function showCredits() {
   els.selectionScreen.classList.add("is-hidden");
   els.gameScreen.classList.add("is-hidden");
   els.creditsScreen.classList.remove("is-hidden");
+  els.endScreen.classList.add("is-hidden");
+}
+
+function showEndScreen() {
+  state.screen = "end";
+  els.menuScreen.classList.add("is-hidden");
+  els.selectionScreen.classList.add("is-hidden");
+  els.gameScreen.classList.add("is-hidden");
+  els.creditsScreen.classList.add("is-hidden");
+  els.endScreen.classList.remove("is-hidden");
+
+  // Remplir les statistiques
+  els.endPlayerName.textContent = state.playerName || "Joueur";
+  els.endScore.textContent = state.score;
+  els.endGoals.textContent = state.totalGoals;
+  const accuracy = state.totalShots > 0 ? Math.round((state.totalGoals / state.totalShots) * 100) : 0;
+  els.endAccuracy.textContent = `${accuracy}%`;
+  els.endMaxCombo.textContent = `x${state.maxCombo}`;
+  els.endSoClose.textContent = state.soCloseCount;
+  els.endSpecialUsed.textContent = state.specialUsageCount;
 }
 
 function resetSeries() {
@@ -371,10 +438,22 @@ function resetSeries() {
   state.ball = null;
   state.specialMoveAvailable = false;
   state.specialMoveUsed = false;
+  state.specialGauge = 0;
+  state.specialUsageCount = 0;
+  state.combo = 0;
+  state.maxCombo = 0;
+  state.consecutiveGoals = 0;
+  state.totalGoals = 0;
+  state.totalShots = 0;
+  state.perfectShots = 0;
+  state.soCloseCount = 0;
+  state.gameStartTime = null;
+  state.gameTimeRemaining = state.gameTime;
   resetShotSequence();
-  state.message = "Nouvelle série : 10 coups francs";
+  state.message = "3 minutes pour marquer un maximum !";
   state.particles = [];
   els.goalPopup.classList.remove("show");
+  if (els.soClosePopup) els.soClosePopup.classList.remove("show");
   updateHud();
 }
 
@@ -393,8 +472,43 @@ function resetShotSequence() {
 
 function updateHud() {
   els.score.textContent = state.score;
-  els.streak.textContent = state.streak;
-  els.attempts.textContent = `${state.attempts}/${state.maxAttempts}`;
+  els.streak.textContent = state.totalGoals;
+  els.attempts.textContent = state.attempts;
+
+  // Mise à jour du timer
+  const minutes = Math.floor(state.gameTimeRemaining / 60);
+  const seconds = Math.floor(state.gameTimeRemaining % 60);
+  const timeText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  if (els.timer) {
+    els.timer.textContent = timeText;
+
+    // Alerte visuelle quand il reste moins de 30 secondes
+    const timerContainer = els.timer.closest('.score-item');
+    if (timerContainer) {
+      if (state.gameTimeRemaining <= 30 && state.gameTimeRemaining > 0) {
+        timerContainer.classList.add('timer-warning');
+      } else {
+        timerContainer.classList.remove('timer-warning');
+      }
+    }
+  }
+
+  // Mise à jour du combo
+  const comboText = state.combo > 0 ? `x${state.combo}` : "x1";
+  els.comboValue.textContent = comboText;
+  els.comboDisplay.dataset.combo = state.combo;
+
+  // Mise à jour de la jauge spéciale
+  els.specialGaugeFill.style.width = `${state.specialGauge}%`;
+  els.specialUsageText.textContent = `${state.specialUsageCount}/${state.maxSpecialUsage}`;
+
+  // Gestion du statut de la jauge spéciale
+  const gaugeContainer = document.querySelector("#specialGaugeContainer");
+  if (state.specialMoveAvailable) {
+    gaugeContainer.classList.add("ready");
+  } else {
+    gaugeContainer.classList.remove("ready");
+  }
 }
 
 function showGoalPopup(signature) {
@@ -404,11 +518,20 @@ function showGoalPopup(signature) {
   els.goalPopup.classList.add("show");
 }
 
+function showSoClosePopup() {
+  const soClosePopup = document.querySelector("#soClosePopup");
+  if (soClosePopup) {
+    soClosePopup.classList.remove("show");
+    void soClosePopup.offsetWidth;
+    soClosePopup.classList.add("show");
+  }
+}
+
 function handleShotInput() {
   const now = performance.now();
   if (now < state.inputLockUntil) return;
   state.inputLockUntil = now + 160;
-  if (state.attempts >= state.maxAttempts || state.phase === "flight" || state.phase === "result" || state.phase === "over") return;
+  if (state.phase === "flight" || state.phase === "result" || state.phase === "over") return;
 
   if (state.phase === "aim") {
     state.phase = "power";
@@ -481,6 +604,7 @@ function launchShot() {
   const speed = 0.92 + power * 0.38;
 
   state.attempts += 1;
+  state.totalShots += 1;
   state.phase = "flight";
   els.timingGauge.dataset.stage = "hidden";
   els.shoot.textContent = "En jeu";
@@ -488,7 +612,10 @@ function launchShot() {
   state.shake = 10 + power * 10;
   state.flash = 0.9;
   state.message = p.signature.toUpperCase();
-  state.keeper.reaction = clamp(0.55 - p.stats.keeperFear + Math.random() * 0.28, 0.18, 0.75);
+
+  // Gardien adaptatif : devient plus réactif selon le score/combo
+  const adaptiveBonus = state.combo * 0.04 + (state.totalGoals / 20) * 0.08;
+  state.keeper.reaction = clamp(0.55 - p.stats.keeperFear + Math.random() * 0.28 - adaptiveBonus, 0.12, 0.75);
   state.keeper.diveX = clamp((aimX - goal.x) / (goal.w / 2), -1, 1);
   state.ball = {
     t: 0,
@@ -533,22 +660,56 @@ function finishShot() {
   if (b.postHit && !b.postHit.inward) scored = false;
 
   if (scored) {
-    state.score += 100 + state.streak * 35 + Math.round((p.stats.curve + p.stats.power) / 2);
+    // Système de combo
+    state.consecutiveGoals += 1;
+    state.totalGoals += 1;
+    state.combo = Math.min(5, Math.floor(state.consecutiveGoals / 1));
+    state.maxCombo = Math.max(state.maxCombo, state.combo);
+
+    // Score avec multiplicateur
+    const baseScore = 100 + Math.round((p.stats.curve + p.stats.power) / 2);
+    const comboMultiplier = state.combo;
+    const earnedScore = baseScore * comboMultiplier;
+    state.score += earnedScore;
     state.streak += 1;
 
-    // Activer la technique spéciale après 5 buts consécutifs
-    if (state.streak >= 5 && !state.specialMoveAvailable && !state.specialMoveUsed) {
+    // Remplir la jauge spéciale
+    state.specialGauge = Math.min(100, state.specialGauge + 20);
+    if (state.specialGauge >= 100 && state.specialUsageCount < state.maxSpecialUsage) {
       state.specialMoveAvailable = true;
-      // TODO: Afficher notification que la technique spéciale est disponible
     }
+
+    // Animation combo
+    state.comboFlash = 1;
 
     state.message = b.postHit ? `Poteau rentrant ! ${p.signature}` : `But ! ${p.signature}`;
     state.flash = 1;
     burst(finalX, finalY, p.trim, 54);
     showGoalPopup(p.signature);
   } else {
+    // Réinitialiser le combo
+    state.consecutiveGoals = 0;
+    state.combo = 0;
+
+    // Détection "So Close!" - près du poteau
+    const leftPost = goal.x - goal.w / 2;
+    const rightPost = goal.x + goal.w / 2;
+    const nearLeftPost = Math.abs(finalX - leftPost) < 35;
+    const nearRightPost = Math.abs(finalX - rightPost) < 35;
+    const inHeightRange = finalY > goal.y && finalY < goal.y + goal.h;
+
+    if ((nearLeftPost || nearRightPost) && inHeightRange && !onTarget) {
+      state.soCloseCount += 1;
+      state.message = "So Close!";
+      showSoClosePopup();
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    } else {
+      state.message = keeperReach ? "Arrêt du gardien" : onTarget ? "Le mur détourne" : "Hors cadre";
+    }
+
     state.streak = 0;
-    state.message = keeperReach ? "Arrêt du gardien" : onTarget ? "Le mur détourne" : "Hors cadre";
     burst(finalX, finalY, "#ffffff", 18);
   }
 
@@ -556,10 +717,9 @@ function finishShot() {
   state.phase = "result";
   setTimeout(() => {
     state.ball = null;
-    state.phase = state.attempts >= state.maxAttempts ? "over" : "aim";
-    if (state.phase === "over") {
-      state.message = `Série terminée : ${state.score} points`;
-    } else {
+    // Ne pas redémarrer si le temps est écoulé
+    if (state.gameTimeRemaining > 0) {
+      state.phase = "aim";
       resetShotSequence();
       state.message = "Replace ta cible";
     }
@@ -588,6 +748,23 @@ function update(dt) {
   state.wallJump = Math.max(0, state.wallJump - dt * 2.2);
   state.shake = Math.max(0, state.shake - dt * 22);
   state.flash = Math.max(0, state.flash - dt * 1.8);
+  state.comboFlash = Math.max(0, state.comboFlash - dt * 2.5);
+
+  // Mise à jour du timer
+  if (state.gameStartTime && state.phase !== "over") {
+    const elapsed = (performance.now() - state.gameStartTime) / 1000;
+    state.gameTimeRemaining = Math.max(0, state.gameTime - elapsed);
+
+    // Fin du temps
+    if (state.gameTimeRemaining <= 0 && state.phase !== "over") {
+      state.phase = "over";
+      state.gameTimeRemaining = 0;
+      state.message = `Temps écoulé ! Score final : ${state.score}`;
+      setTimeout(() => showEndScreen(), 800);
+    }
+
+    updateHud();
+  }
 
   if (state.phase === "power" || state.phase === "curve") {
     const meterSpeed = state.phase === "power" ? 1.28 : 1.05;
@@ -708,8 +885,7 @@ function drawPreview() {
     drawPreviewFallback(p, w, h);
   }
 
-  previewCtx.fillStyle = "#ffcf33";
-  previewCtx.fillRect(28, h - 44, 84, 6);
+  // Ligne jaune supprimée
 }
 
 function drawPreviewFallback(p, w, h) {
@@ -1380,10 +1556,45 @@ els.playButton.addEventListener("click", showSelection);
 els.creditsButton.addEventListener("click", showCredits);
 els.backToMenu.addEventListener("click", showMenu);
 els.backToMenuFromSelection.addEventListener("click", showMenu);
+if (els.backToMenuFromEnd) {
+  els.backToMenuFromEnd.addEventListener("click", showMenu);
+}
+if (els.restartGame) {
+  els.restartGame.addEventListener("click", showGame);
+}
 els.shoot.addEventListener("click", handleShotInput);
 els.mobileShoot.addEventListener("click", handleShotInput);
 els.reset.addEventListener("click", resetSeries);
-els.random.addEventListener("click", () => selectPlayer(Math.floor(Math.random() * PLAYERS.length)));
+els.random.addEventListener("click", () => {
+  // Animation de roulette avec ralentissement progressif
+  const finalIndex = Math.floor(Math.random() * PLAYERS.length);
+  let currentIndex = state.selected;
+  let spinCount = 0;
+  const totalSpins = 15;
+
+  // Désactiver le bouton pendant l'animation
+  els.random.disabled = true;
+
+  function spin() {
+    if (spinCount >= totalSpins) {
+      selectPlayer(finalIndex);
+      els.random.disabled = false;
+      return;
+    }
+
+    // Ralentissement progressif : l'intervalle augmente à chaque tour
+    const delay = 50 + spinCount * 30;
+
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % PLAYERS.length;
+      selectPlayer(currentIndex);
+      spinCount++;
+      spin();
+    }, delay);
+  }
+
+  spin();
+});
 els.enterGame.addEventListener("click", showGame);
 els.changePlayer.addEventListener("click", showSelection);
 
@@ -1392,4 +1603,15 @@ configureCanvasQuality();
 selectPlayer(4);
 updateHud();
 drawPreview();
+
+try {
+  const savedName = localStorage.getItem("wcfks_playerName");
+  if (savedName) {
+    els.playerNameInput.value = savedName;
+    state.playerName = savedName;
+  }
+} catch (e) {
+  console.warn("LocalStorage not available:", e);
+}
+
 requestAnimationFrame(loop);
