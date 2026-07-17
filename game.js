@@ -60,6 +60,11 @@ const els = {
   endMaxCombo: document.querySelector("#endMaxCombo"),
   endSoClose: document.querySelector("#endSoClose"),
   endSpecialUsed: document.querySelector("#endSpecialUsed"),
+  countdownDisplay: document.querySelector("#countdownDisplay"),
+  countdownValue: document.querySelector("#countdownValue"),
+  postMessage: document.querySelector("#postMessage"),
+  muteButton: document.querySelector("#muteButton"),
+  gaugePerfectMarker: document.querySelector(".gauge-marker-perfect"),
 };
 
 const scene = {
@@ -264,6 +269,36 @@ const wallImages = {
 wallImages.idle.src = "assets/wall/wall-idle.png?v=2";
 wallImages.jump.src = "assets/wall/wall-jump.png?v=2";
 
+const playerSongs = {
+  ronaldo: new Audio("assets/sound/ronaldo-song.mp3"),
+  messi: new Audio("assets/sound/messi-song.mp3"),
+  mbappe: new Audio("assets/sound/mbappe-song.mp3"),
+  vinicius: new Audio("assets/sound/vinicius-song.mp3"),
+  yamal: new Audio("assets/sound/yamal-song.mp3"),
+  salah: new Audio("assets/sound/salah-song.mp3"),
+};
+
+// Configuration des audios en boucle
+Object.values(playerSongs).forEach(audio => {
+  audio.loop = true;
+  audio.volume = 0.3;
+});
+
+const whistleSound = new Audio("assets/sound/referee-whistle.mp3");
+whistleSound.volume = 0.5;
+
+const ballKickLow = new Audio("assets/sound/ball-kick-low.mp3");
+ballKickLow.volume = 0.6;
+
+const ballKickHigh = new Audio("assets/sound/ball-kick-high.mp3");
+ballKickHigh.volume = 0.6;
+
+const poteauSound = new Audio("assets/sound/poteau.mp3");
+poteauSound.volume = 0.7;
+
+let currentPlayingSong = null;
+let isMusicMuted = false;
+
 const state = {
   selected: 0,
   screen: "menu",
@@ -291,6 +326,7 @@ const state = {
   gameTime: 180,
   gameStartTime: null,
   gameTimeRemaining: 180,
+  countdownActive: false,
   aimTime: 0,
   wallJump: 0,
   shake: 0,
@@ -341,6 +377,44 @@ function buildCards() {
   });
 }
 
+function handlePlayerMusic(playerId) {
+  // Arrêter la musique actuelle si elle existe
+  if (currentPlayingSong) {
+    currentPlayingSong.pause();
+    currentPlayingSong.currentTime = 0;
+    currentPlayingSong = null;
+  }
+
+  // Démarrer la musique du joueur si elle existe et que le son n'est pas coupé
+  if (playerSongs[playerId] && !isMusicMuted) {
+    currentPlayingSong = playerSongs[playerId];
+    currentPlayingSong.play().catch(e => {
+      console.warn("Autoplay bloqué:", e);
+    });
+  }
+}
+
+function toggleMute() {
+  isMusicMuted = !isMusicMuted;
+
+  // Mettre à jour l'icône du bouton
+  const muteIcon = els.muteButton.querySelector(".mute-icon");
+  muteIcon.textContent = isMusicMuted ? "🔇" : "🔊";
+  els.muteButton.classList.toggle("muted", isMusicMuted);
+
+  // Arrêter la musique si on mute
+  if (isMusicMuted && currentPlayingSong) {
+    currentPlayingSong.pause();
+    currentPlayingSong.currentTime = 0;
+    currentPlayingSong = null;
+  }
+  // Relancer la musique si on démute
+  else if (!isMusicMuted && state.screen === "selection") {
+    const p = player();
+    handlePlayerMusic(p.id);
+  }
+}
+
 function selectPlayer(index) {
   state.selected = index;
   const p = player();
@@ -359,6 +433,9 @@ function selectPlayer(index) {
   els.selectionComposureBar.value = p.stats.composure;
   [...els.cards.children].forEach((card, i) => card.classList.toggle("active", i === index));
   state.message = `${p.signature} prêt`;
+
+  // Gérer la musique du joueur
+  handlePlayerMusic(p.id);
 }
 
 function showMenu() {
@@ -367,6 +444,13 @@ function showMenu() {
   els.selectionScreen.classList.add("is-hidden");
   els.gameScreen.classList.add("is-hidden");
   els.creditsScreen.classList.add("is-hidden");
+
+  // Arrêter la musique lors du retour au menu
+  if (currentPlayingSong) {
+    currentPlayingSong.pause();
+    currentPlayingSong.currentTime = 0;
+    currentPlayingSong = null;
+  }
 }
 
 function showSelection() {
@@ -375,6 +459,32 @@ function showSelection() {
   els.selectionScreen.classList.remove("is-hidden");
   els.gameScreen.classList.add("is-hidden");
   els.creditsScreen.classList.add("is-hidden");
+}
+
+function startCountdown() {
+  state.countdownActive = true;
+  let count = 3;
+  els.countdownValue.textContent = count;
+  els.countdownDisplay.style.opacity = "1";
+
+  const countdownInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      els.countdownValue.textContent = count;
+    } else if (count === 0) {
+      els.countdownValue.textContent = "GO!";
+      // Jouer le son du sifflet
+      whistleSound.currentTime = 0;
+      whistleSound.play().catch(e => {
+        console.warn("Whistle sound blocked:", e);
+      });
+    } else {
+      clearInterval(countdownInterval);
+      els.countdownDisplay.style.opacity = "0";
+      state.countdownActive = false;
+      startGameTimer();
+    }
+  }, 1000);
 }
 
 function showGame() {
@@ -393,8 +503,16 @@ function showGame() {
   els.gameScreen.classList.remove("is-hidden");
   els.creditsScreen.classList.add("is-hidden");
   els.endScreen.classList.add("is-hidden");
+
+  // Arrêter la musique lors de l'entrée en jeu
+  if (currentPlayingSong) {
+    currentPlayingSong.pause();
+    currentPlayingSong.currentTime = 0;
+    currentPlayingSong = null;
+  }
+
   resetSeries();
-  startGameTimer();
+  startCountdown();
 }
 
 function startGameTimer() {
@@ -468,6 +586,13 @@ function resetShotSequence() {
   els.gaugeValue.textContent = "--";
   els.shoot.textContent = "Démarrer";
   els.mobileShoot.textContent = "Action";
+
+  // Randomiser la position du marqueur parfait (jaune)
+  // Position aléatoire entre 20% et 50% (laisse de la place pour la largeur du marqueur)
+  const randomPosition = 20 + Math.random() * 30;
+  if (els.gaugePerfectMarker) {
+    els.gaugePerfectMarker.style.left = `${randomPosition}%`;
+  }
 }
 
 function updateHud() {
@@ -527,7 +652,19 @@ function showSoClosePopup() {
   }
 }
 
+function showPostMessage(message) {
+  els.postMessage.textContent = message;
+  els.postMessage.classList.remove("show");
+  void els.postMessage.offsetWidth;
+  els.postMessage.classList.add("show");
+
+  setTimeout(() => {
+    els.postMessage.classList.remove("show");
+  }, 2000);
+}
+
 function handleShotInput() {
+  if (state.countdownActive) return;
   const now = performance.now();
   if (now < state.inputLockUntil) return;
   state.inputLockUntil = now + 160;
@@ -588,15 +725,28 @@ function launchShot() {
   const postSide = nearestPost < goal.x ? -1 : 1;
   const postDistance = Math.abs(aimX - nearestPost);
   const hitsPost = postDistance < 19 && aimY > goal.y + 18 && aimY < goal.y + goal.h - 18;
+  const hitsCrossbar = Math.abs(aimY - goal.y) < 15 && aimX > leftPost + 15 && aimX < rightPost - 15;
   const approachesFromInside = postSide < 0 ? aimX >= nearestPost - 5 : aimX <= nearestPost + 5;
   const postHit = hitsPost
     ? {
         x: nearestPost,
         y: aimY,
         side: postSide,
+        type: "poteau",
         inward: approachesFromInside,
         reboundX: nearestPost - postSide * (approachesFromInside ? 54 : -38),
         reboundY: clamp(aimY + 12, goal.y + 30, goal.y + goal.h - 32),
+        triggered: false,
+      }
+    : hitsCrossbar
+    ? {
+        x: aimX,
+        y: goal.y,
+        side: 0,
+        type: "transversale",
+        inward: false,
+        reboundX: aimX,
+        reboundY: goal.y + 45,
         triggered: false,
       }
     : null;
@@ -612,6 +762,15 @@ function launchShot() {
   state.shake = 10 + power * 10;
   state.flash = 0.9;
   state.message = p.signature.toUpperCase();
+
+  // Son de frappe selon la puissance
+  if (power > 0.6) {
+    ballKickHigh.currentTime = 0;
+    ballKickHigh.play().catch(e => console.warn("Kick sound blocked:", e));
+  } else {
+    ballKickLow.currentTime = 0;
+    ballKickLow.play().catch(e => console.warn("Kick sound blocked:", e));
+  }
 
   // Gardien adaptatif : devient plus réactif selon le score/combo
   const adaptiveBonus = state.combo * 0.04 + (state.totalGoals / 20) * 0.08;
@@ -682,7 +841,13 @@ function finishShot() {
     // Animation combo
     state.comboFlash = 1;
 
-    state.message = b.postHit ? `Poteau rentrant ! ${p.signature}` : `But ! ${p.signature}`;
+    if (b.postHit) {
+      const hitType = b.postHit.type === "transversale" ? "Transversale rentrante" : "Poteau rentrant";
+      state.message = `${hitType} ! ${p.signature}`;
+      showPostMessage(hitType + " !");
+    } else {
+      state.message = `But ! ${p.signature}`;
+    }
     state.flash = 1;
     burst(finalX, finalY, p.trim, 54);
     showGoalPopup(p.signature);
@@ -788,6 +953,17 @@ function update(dt) {
       state.shake = Math.max(state.shake, 7);
       state.flash = Math.max(state.flash, 0.32);
       burst(b.postHit.x, b.postHit.y, "#ffffff", 24);
+
+      // Son du poteau/transversale
+      poteauSound.currentTime = 0;
+      poteauSound.play().catch(e => console.warn("Poteau sound blocked:", e));
+
+      // Afficher le message de poteau/transversale
+      if (b.postHit.type === "transversale") {
+        showPostMessage("Transversale !");
+      } else if (b.postHit.type === "poteau") {
+        showPostMessage("Poteau !");
+      }
     }
     if (b.t >= 1) finishShot();
   }
@@ -1564,7 +1740,6 @@ if (els.restartGame) {
 }
 els.shoot.addEventListener("click", handleShotInput);
 els.mobileShoot.addEventListener("click", handleShotInput);
-els.reset.addEventListener("click", resetSeries);
 els.random.addEventListener("click", () => {
   // Animation de roulette avec ralentissement progressif
   const finalIndex = Math.floor(Math.random() * PLAYERS.length);
@@ -1596,6 +1771,7 @@ els.random.addEventListener("click", () => {
   spin();
 });
 els.enterGame.addEventListener("click", showGame);
+els.muteButton.addEventListener("click", toggleMute);
 els.changePlayer.addEventListener("click", showSelection);
 
 buildCards();

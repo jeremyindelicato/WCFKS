@@ -37,9 +37,11 @@
             <img class="brand-logo" src="assets/branding/wlc-logo.png" alt="WLC Free Kick Simulator" />
           </div>
           <div class="screen-title">
-            <span>Mode solo</span>
             <strong>Sélection du tireur</strong>
           </div>
+          <button id="muteButton" type="button" class="mute-button" title="Couper/Activer la musique">
+            <span class="mute-icon">🔊</span>
+          </button>
         </div>
 
         <section class="roster" aria-label="Sélection du tireur">
@@ -94,18 +96,15 @@
         </div>
 
         <footer class="selection-actions">
-          <div class="selection-footer-content">
-            <p><strong>WLC</strong> Chaque tireur possède sa propre trajectoire.</p>
-            <div class="player-name-input">
-              <input
-                type="text"
-                id="playerNameInput"
-                placeholder="Entre ton prénom..."
-                maxlength="20"
-                autocomplete="off"
-              />
-            </div>
-          </div>
+          <p><strong>WLC</strong> Chaque tireur possède sa propre trajectoire.</p>
+          <input
+            type="text"
+            id="playerNameInput"
+            placeholder="Ton prénom..."
+            maxlength="20"
+            autocomplete="off"
+            class="player-name-input"
+          />
           <button id="enterGame" type="button">Entrer sur le terrain <span>→</span></button>
         </footer>
       </section>
@@ -149,7 +148,6 @@
 
         <div class="game-controls">
           <button id="shoot" type="button">Démarrer</button>
-          <button id="reset" type="button" class="secondary">↺</button>
           <button id="changePlayer" type="button" class="secondary">Changer</button>
         </div>
 
@@ -180,6 +178,12 @@
           <strong>SO CLOSE!</strong>
           <span>Près du poteau</span>
         </div>
+
+        <div id="countdownDisplay" class="countdown-display">
+          <span id="countdownValue">3</span>
+        </div>
+
+        <div id="postMessage" class="post-message"></div>
       </section>
 
       <section id="endScreen" class="end-screen is-hidden">
@@ -234,7 +238,7 @@
                   <strong>Lucas M.</strong>
                   <span class="player-country-lb">🇧🇷 São Paulo</span>
                 </div>
-                <strong class="score-value">2,840</strong>
+                <strong class="score-value">12,840</strong>
               </div>
               <div class="leaderboard-item leaderboard-rank-2">
                 <span class="rank">2</span>
@@ -242,7 +246,7 @@
                   <strong>Sofia R.</strong>
                   <span class="player-country-lb">🇪🇸 Madrid</span>
                 </div>
-                <strong class="score-value">2,715</strong>
+                <strong class="score-value">11,715</strong>
               </div>
               <div class="leaderboard-item leaderboard-rank-3">
                 <span class="rank">3</span>
@@ -250,7 +254,7 @@
                   <strong>Karim B.</strong>
                   <span class="player-country-lb">🇫🇷 Paris</span>
                 </div>
-                <strong class="score-value">2,590</strong>
+                <strong class="score-value">10,590</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">4</span>
@@ -258,7 +262,7 @@
                   <strong>Yuki T.</strong>
                   <span class="player-country-lb">🇯🇵 Tokyo</span>
                 </div>
-                <strong class="score-value">2,445</strong>
+                <strong class="score-value">9,445</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">5</span>
@@ -266,7 +270,7 @@
                   <strong>Emma L.</strong>
                   <span class="player-country-lb">🇬🇧 London</span>
                 </div>
-                <strong class="score-value">2,320</strong>
+                <strong class="score-value">8,320</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">6</span>
@@ -274,7 +278,7 @@
                   <strong>Ahmed K.</strong>
                   <span class="player-country-lb">🇪🇬 Le Caire</span>
                 </div>
-                <strong class="score-value">2,180</strong>
+                <strong class="score-value">7,180</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">7</span>
@@ -282,7 +286,7 @@
                   <strong>Marie D.</strong>
                   <span class="player-country-lb">🇫🇷 Lyon</span>
                 </div>
-                <strong class="score-value">2,095</strong>
+                <strong class="score-value">6,095</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">8</span>
@@ -290,7 +294,7 @@
                   <strong>Diego S.</strong>
                   <span class="player-country-lb">🇦🇷 Buenos Aires</span>
                 </div>
-                <strong class="score-value">1,975</strong>
+                <strong class="score-value">5,975</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">9</span>
@@ -298,7 +302,7 @@
                   <strong>Anna W.</strong>
                   <span class="player-country-lb">🇩🇪 Berlin</span>
                 </div>
-                <strong class="score-value">1,860</strong>
+                <strong class="score-value">4,860</strong>
               </div>
               <div class="leaderboard-item">
                 <span class="rank">10</span>
@@ -306,7 +310,7 @@
                   <strong>João P.</strong>
                   <span class="player-country-lb">🇵🇹 Lisbonne</span>
                 </div>
-                <strong class="score-value">1,750</strong>
+                <strong class="score-value">3,750</strong>
               </div>
             </div>
           </div>
